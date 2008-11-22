@@ -50,6 +50,7 @@ Workflow execution
 In this plugin there's an implementation of [ezcWorkflowExecution](http://ezcomponents.org/docs/api/trunk/Workflow/ezcWorkflowExecution.html) that uses propel to store and load executions from a database. Check the class *sfPropelEzcWorkflowExecution*.
 
 If you need your workflow receives parameters from a symfony webform you must include in you workflow definition a node type *ezcWorkflowNodeInputFromSf*. The parameters that you need to set-up in the node are:
+
   * $configuration['sf_action_uri'] = (string) symfony 'module/action'
   * $configuration['sf_is_secure'] = (boolean) true indicates that a credential is required
   * $configuration['sf_credential'] = (string) requirede credential
@@ -247,4 +248,4 @@ TODO
 
   * Create a class for receiving notifications from the ezcWorkflow and pass them to sf event framework
   * Create a node for resume and process workflow from CLI
-
+  * Create workflow monitoring components
