@@ -1,0 +1,27 @@
+generator:
+  class: sfPropelGenerator
+  param:
+    model_class:           sfEzcWorkflow
+    theme:                 admin
+    non_verbose_templates: true
+    with_show:             false
+    singular:              ~
+    plural:                ~
+    route_prefix:          sf_ezc_workflow
+    with_propel_route:     1
+
+    config:
+      actions: ~
+      fields:  ~
+      list:
+        title: sfEzcWorkflow Admin
+        display: [ name, version, created_at ]
+        object_actions:
+          downloadXml:   { label: Download .xml, action: downloadXml }
+          downloadDot:   { label: Download .dot (GraphViz), action: downloadDot }
+        batch_actions: {}
+        actions: {}
+      filter:  ~
+      form:    ~
+      edit:    ~
+      new:     ~

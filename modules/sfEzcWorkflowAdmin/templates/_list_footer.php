@@ -1,0 +1,1 @@
+<?php include_partial('sfEzcWorkflowAdmin/upload_xml_form', array()) ?>

@@ -1,0 +1,250 @@
+sfEzcWorkflow plugin
+====================
+
+The `sfEzcWorkflow` is a symfony plugin which allows you to create workflow-driven applications on symfony projects.
+
+Workflow definition and execution are handled by ezcWorkflow, therefore you need to [install ezComponents](http://ezcomponents.org/docs/install) first.
+
+This plugin provides an interface for admin workflows and executions (create, instantiate, resume and cancel an ezcWorkflow). Also, an input node which links the workflow execution with symfony actions is provided.
+
+Installation
+------------
+
+  * Install the plugin
+
+        $ symfony plugin:install sfEzcWorkflowPlugin
+
+  * Rebuild your model
+
+        $ symfony propel:build-all
+        $ symfony propel:build-sql
+
+  * Update you database tables by starting from scratch (it will delete all
+    the existing tables, then re-create them):
+
+        $ symfony propel:insert-sql
+
+    or you can just create the new tables by using the generated SQL
+    statements in `data/sql/plugins.sfGuardAuth.lib.model.schema.sql`
+
+  * Enable one or more modules in your `settings.yml`
+    * For your backend application:  sfEzcWorkflowAdmin, sfEzcWorkflowExecutionAdmin
+
+            [php]
+            all:
+              .settings:
+                enabled_modules:      [default, sfEzcWorkflowAdmin, sfEzcWorkflowExecutionAdmin]
+
+  * Clear you cache
+
+        $ symfony cc
+
+Workflow definition
+-------------------
+
+You can define workflow either by an XML file or PHP code, for more information about this please check the [ezcWorkflow documentation](http://ezcomponents.org/docs/tutorials/Workflow). Also you can store a workflow definition on a database by using the class *sfPropelEzcWorkflowDefinitionStorage* which implements the interface of [ezcWorkflowDefinitionStorage](http://ezcomponents.org/docs/api/trunk/Workflow/ezcWorkflowDefinitionStorage.html).
+
+Workflow execution
+------------------
+
+In this plugin there's an implementation of [ezcWorkflowExecution](http://ezcomponents.org/docs/api/trunk/Workflow/ezcWorkflowExecution.html) that uses propel to store and load executions from a database. Check the class *sfPropelEzcWorkflowExecution*.
+
+If you need your workflow receives parameters from a symfony webform you must include in you workflow definition a node type *ezcWorkflowNodeInputFromSf*. The parameters that you need to set-up in the node are:
+  * $configuration['sf_action_uri'] = (string) symfony 'module/action'
+  * $configuration['sf_is_secure'] = (boolean) true indicates that a credential is required
+  * $configuration['sf_credential'] = (string) requirede credential
+
+Example
+-------
+
+  * Workflow definition. Save code below in a file. This workflow just ask for a choice (true or false) if you choose true it will display a form where you can type a text message, then you get a page that displays your choice and your typed message.
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <workflow name="Test_sf" version="1">
+          <node id="1" type="Start">
+            <outNode id="3"/>
+          </node>
+          <node id="2" type="End"/>
+          <node id="3" type="InputFromSf">
+            <variable name="choice">
+              <condition type="IsBool"/>
+            </variable>
+            <sf_variable name="is_secure" value="0" />
+            <sf_variable name="action_uri" value="test/choice" />
+            <sf_variable name="credential" value="" />
+            <outNode id="4"/>
+          </node>
+          <node id="4" type="ExclusiveChoice">
+            <condition type="Variable" name="choice">
+              <condition type="IsTrue"/>
+              <outNode id="8"/>
+            </condition>
+            <condition type="Variable" name="choice">
+              <condition type="IsFalse"/>
+              <outNode id="7"/>
+            </condition>
+          </node>
+          <node id="5" type="Action" serviceObjectClass="MyServiceObject">
+            <arguments>
+              <string>message: TRUE</string>
+            </arguments>
+            <outNode id="6"/>
+          </node>
+          <node id="6" type="SimpleMerge">
+            <outNode id="2"/>
+          </node>
+          <node id="7" type="Action" serviceObjectClass="MyServiceObject">
+            <arguments>
+              <string>message: FALSE</string>
+            </arguments>
+            <outNode id="6"/>
+          </node>
+          <node id="8" type="InputFromSf">
+            <variable name="message">
+              <condition type="IsString"/>
+            </variable>
+            <sf_variable name="is_secure" value="0" />
+            <sf_variable name="action_uri" value="test/message" />
+            <sf_variable name="credential" value="" />
+            <outNode id="5"/>
+          </node>
+        
+        </workflow>
+
+
+  * Create the module *test*
+  
+        $ ./symfony generate:module frontend test
+        
+  * Create the actions *choice* and *message*. Use the code below in the file actions.class.php
+  
+        [php]
+        <?php
+        require_once dirname(__FILE__).'/../lib/MyServiceObject.class.php';
+        class testActions extends sfActions
+        {
+         /**
+          * Executes index action
+          *
+          * @param sfRequest $request A request object
+          */
+          public function executeIndex(sfWebRequest $request)
+          {
+            $storage = new sfPropelEzcWorkflowDefinitionStorage();
+            $workflow = $storage->loadByName('Test_sf');
+            $execution = new sfPropelEzcWorkflowExecution();
+            $execution->workflow = $workflow;
+            $id = $execution->start();
+            sfEzcWorkflowActionsUtil::doProcessRemainingNodes($execution,$this);
+          }
+          
+          public function executeChoice(sfWebRequest $request)
+          {
+            $this->sf_ezc_wf_execution_id = $request->getParameter('sf_ezc_wf_execution_id');
+            if ($request->isMethod('post'))
+            {
+              $choice = $request->getParameter('choice')==='true'?true:false;
+              $execution = sfEzcWorkflowActionsUtil::doWorkflowResume($this->sf_ezc_wf_execution_id, array('choice'=>$choice), $this);
+              $this->variables = $execution->getVariables();
+              $this->setTemplate('finished');
+            }
+          }
+          
+          public function executeMessage(sfWebRequest $request)
+          {
+            $this->sf_ezc_wf_execution_id = $request->getParameter('sf_ezc_wf_execution_id');
+            if ($request->isMethod('post'))
+            {
+                $message = $request->getParameter('message');
+                $execution = sfEzcWorkflowActionsUtil::doWorkflowResume($this->sf_ezc_wf_execution_id, array('message'=>$message),$this);
+                $this->variables = $execution->getVariables()?$execution->getVariables():'nada';
+                $this->setTemplate('finished');
+            }
+          }
+        }
+        ?>
+
+  * Create the templates
+    * templates/choiceSuccess.php
+
+            [php]
+            <?php
+            echo form_tag('test/choice');
+            ?>
+              Choice:
+              <input type="hidden" name="sf_ezc_wf_execution_id" value="<?php echo $sf_ezc_wf_execution_id ?>" />
+              <select name="choice">
+                <option value="true">True</option>
+                <option value="false">False</option>
+              </select>
+              <input type="submit">
+            </form>
+            ?>
+    * templates/messageSuccess.php
+
+            [php]
+            <?php
+            echo form_tag('test/message');
+            ?>
+              Message:
+              <input type="hidden" name="sf_ezc_wf_execution_id" value="<?php echo $sf_ezc_wf_execution_id ?>" />
+              <textarea name="message"></textarea>
+              <input type="submit">
+            </form>
+            ?>
+    
+    * templates/finishedSuccess.php
+
+            [php]
+            <!-- file:  -->
+            <h1>Workflow finished</h1>
+    
+            <p>Workflow variables: <pre><?php var_dump($variables); ?></pre></p>
+
+
+  * Create the class MyServiceObject on lib/MyServiceObject.class.php
+
+        [php]
+        <?php
+        class MyServiceObject implements ezcWorkflowServiceObject
+        {
+            private $message;
+        
+            public function __construct( $message )
+            {
+              $this->message = $message;
+            }
+        
+            public function execute( ezcWorkflowExecution $execution )
+            {
+              //do whatever you need to do here ... ie. send an email
+              mail('root@localhost', 'Automatic email', $this->message);
+              // Manipulate the workflow.
+              // Does not affect the workflow, for illustration only. 
+              $execution->setVariable( 'email_sent', true );
+              return true;
+            }
+        
+            public function __toString()
+            {
+              return "MyServiceObject, message {$this->message}";
+            }
+        }
+        ?>
+
+
+  * Store the workflow definition on the database.
+    * Go to http://localhost/sfEzcWorkflowAdmin
+    * In the form type the name 'Test_sf' and add the xml file
+    * Press the button 'Create workflow from xml definition'
+    
+  * To execute the workflow just go to http://localhost/test
+
+  * You can monitor the current executions on http://localhost/sfEzcWorkflowExecutionAdmin
+
+TODO
+----
+
+  * Create a class for receiving notifications from the ezcWorkflow and pass them to sf event framework
+  * Create a node for resume and process workflow from CLI
+

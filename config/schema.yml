@@ -1,0 +1,46 @@
+propel:
+  _attributes:
+    package: plugins.sfEzcWorkflowPropelPlugin.lib.model 
+    defaultIdMethod: native
+  sf_ezc_worflow_execution:
+    _attributes: { phpName: sfEzcWorkflowExecution }
+    id: { type: INTEGER, primaryKey: true, autoIncrement: true, required: true }
+    workflow_id: { type: INTEGER, required: true, foreignTable: sf_ezc_worflow, foreignReference: id }
+    parent: { type: INTEGER, required: true }
+    started: { type: INTEGER, required: true }
+    variables: { type: LONGVARCHAR, required: true }
+    waiting_for: { type: LONGVARCHAR, required: true }
+    threads: { type: LONGVARCHAR, required: true }
+    next_thread_id: { type: INTEGER, required: true }
+    _indexes: { execution_parent: [parent] }
+  sf_ezc_worflow_execution_state:
+    _attributes: { phpName: sfEzcWorkflowExecutionState }
+    execution_id: { type: INTEGER, primaryKey: true, required: true, foreignTable: sf_ezc_worflow_execution, foreignReference: id }
+    node_id: { type: INTEGER, primaryKey: true, required: true, foreignTable: sf_ezc_worflow_node, foreignReference: id }
+    state: { type: LONGVARCHAR, required: true }
+    activated_from: { type: LONGVARCHAR, required: true }
+    thread_id: { type: INTEGER, required: true }
+  sf_ezc_worflow_node:
+    _attributes: { phpName: sfEzcWorkflowNode }
+    workflow_id: { type: INTEGER, required: true, foreignTable: sf_ezc_worflow, foreignReference: id }
+    id: { type: INTEGER, primaryKey: true, autoIncrement: true, required: true }
+    classname: { type: VARCHAR, size: '255', required: true }
+    configuration: { type: LONGVARCHAR, required: true }
+    _indexes: { workflow_id: [workflow_id] }
+  sf_ezc_worflow_node_connection:
+    _attributes: { phpName: sfEzcWorkflowNodeConnection }
+    incoming_node_id: { type: INTEGER, required: true, foreignTable: sf_ezc_worflow_node, foreignReference: id }
+    outgoing_node_id: { type: INTEGER, required: true, foreignTable: sf_ezc_worflow_node, foreignReference: id }
+    _indexes: { incoming_node_id: [incoming_node_id] }
+  sf_ezc_worflow_variable_handler:
+    _attributes: { phpName: sfEzcWorkflowVariableHandler }
+    workflow_id: { type: INTEGER, primaryKey: true, required: true, foreignTable: sf_ezc_worflow, foreignReference: id }
+    variable: { type: VARCHAR, size: '255', required: true }
+    classname: { type: VARCHAR, size: '255', primaryKey: true, required: true }
+  sf_ezc_worflow:
+    _attributes: { phpName: sfEzcWorkflow }
+    id: { type: INTEGER, primaryKey: true, autoIncrement: true, required: true }
+    name: { type: VARCHAR, size: '255', required: true }
+    version: { type: INTEGER, required: true, defaultValue: '1' }
+    created_at: 
+    _uniques: { name_version: [name, version] }

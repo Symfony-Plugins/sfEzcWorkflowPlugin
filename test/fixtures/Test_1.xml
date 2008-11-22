@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workflow name="Test" version="1">
+  <node id="1" type="Start">
+    <outNode id="3"/>
+  </node>
+  <node id="2" type="End"/>
+  <node id="3" type="Input">
+    <variable name="choice">
+      <condition type="IsBool"/>
+    </variable>
+    <outNode id="4"/>
+  </node>
+  <node id="4" type="ExclusiveChoice">
+    <condition type="Variable" name="choice">
+      <condition type="IsTrue"/>
+      <outNode id="5"/>
+    </condition>
+    <condition type="Variable" name="choice">
+      <condition type="IsFalse"/>
+      <outNode id="7"/>
+    </condition>
+  </node>
+  <node id="5" type="Action" serviceObjectClass="MyServiceObject">
+    <arguments>
+      <string>message: TRUE</string>
+    </arguments>
+    <outNode id="6"/>
+  </node>
+  <node id="6" type="SimpleMerge">
+    <outNode id="2"/>
+  </node>
+  <node id="7" type="Action" serviceObjectClass="MyServiceObject">
+    <arguments>
+      <string>message: FALSE</string>
+    </arguments>
+    <outNode id="6"/>
+  </node>
+</workflow>

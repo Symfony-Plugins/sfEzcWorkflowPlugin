@@ -1,0 +1,39 @@
+generator:
+  class: sfPropelGenerator
+  param:
+    model_class:           sfEzcWorkflowExecution
+    theme:                 admin
+    non_verbose_templates: true
+    with_show:             true
+    singular:              ~
+    plural:                ~
+    route_prefix:          sfEzcWorkflowExecutionAdmin
+    with_propel_route:     1
+
+    config:
+      actions: ~
+      fields: ~
+      list:
+        title: sfEzcWorkflow Instances Admin
+        display: [ parent, sfEzcWorkflow, _started, _variables, _waiting_for]
+        fields:
+          sfEzcWorkflow: {label: Workflow}
+        object_actions:
+          resume:   { label: Resume, action: Resume }
+          cancel:
+            label: Cancel
+            action: Cancel
+            params: confirm=Are you sure you want to cancel the workflow instance?
+        actions:
+          _new:     { label: Create a workflow instance}
+        batch_actions:
+          cancelAll: {label: Cancel}
+      filter:
+        display: [ workflow_id ]
+      form:
+        display: [ workflow_id ]
+        fields:
+          workflow_id: {label: Workflow, help: Choose the workflow that you want to instanciate}
+      edit:    ~
+      new:
+        title: Create a workflow instance
