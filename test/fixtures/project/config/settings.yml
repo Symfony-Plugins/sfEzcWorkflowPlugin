@@ -1,2 +1,2 @@
 all:
-  enabled_modules: [sf_ezc_workflow_execution, sfEzcWorflowMonitor, sfEzcWorkflowMonitor]
+  enabled_modules: [sf_ezc_workflow_execution, sfEzcWorflowMonitor, sfEzcWorkflowMonitor, sfEzcWorkflow]
