@@ -15,7 +15,7 @@ class sfEzcWorkflowRouting
       'model'               => 'sfEzcWorkflowExecution',
       'module'              => 'sfEzcWorkflowExecutionAdmin',
       'prefix_path'         => 'sfEzcWorkflowExecutionAdmin',
-      'with_wilcard_routes' => true,
+      'with_wildcard_routes' => true,
       'requirements'        => array(),
     )));
   }
@@ -26,7 +26,7 @@ class sfEzcWorkflowRouting
       'model'               => 'sfEzcWorkflow',
       'module'              => 'sfEzcWorkflowAdmin',
       'prefix_path'         => 'sfEzcWorkflowAdmin',
-      'with_wilcard_routes' => true,
+      'with_wildcard_routes' => true,
       'requirements'        => array(),
     )));
   }
