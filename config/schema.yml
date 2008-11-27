@@ -1,6 +1,6 @@
 propel:
   _attributes:
-    package: plugins.sfEzcWorkflowPropelPlugin.lib.model 
+    package: plugins.sfEzcWorkflowPlugin.lib.model 
     defaultIdMethod: native
   sf_ezc_workflow_execution:
     _attributes: { phpName: sfEzcWorkflowExecution }
