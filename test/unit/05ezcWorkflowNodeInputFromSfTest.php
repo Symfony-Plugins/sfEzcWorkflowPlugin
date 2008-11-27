@@ -60,8 +60,14 @@ try {
   {
     if ($node instanceof ezcWorkflowNodeInputFromSf)
     {
-      if (($node->getActionUri() === 'test/choice') || ($node->getActionUri() === 'test/message'))
-      $t->pass('action uri loaded correctly' );
+      if (($node->getActionUri() === 'sfEzcWorkflowDemo/choice') || ($node->getActionUri() === 'sfEzcWorkflowDemo/message'))
+      {
+          $t->pass('action uri loaded correctly' );
+      }
+      else
+      {
+          $t->fail('incorrect action uri');
+      }
     }
   }
   

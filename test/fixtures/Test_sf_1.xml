@@ -9,7 +9,7 @@
       <condition type="IsBool"/>
     </variable>
     <sf_variable name="is_secure" value="0" />
-    <sf_variable name="action_uri" value="test/choice" />
+    <sf_variable name="action_uri" value="sfEzcWorkflowDemo/choice" />
     <sf_variable name="credential" value="" />
     <outNode id="4"/>
   </node>
@@ -43,7 +43,7 @@
       <condition type="IsString"/>
     </variable>
     <sf_variable name="is_secure" value="0" />
-    <sf_variable name="action_uri" value="test/message" />
+    <sf_variable name="action_uri" value="sfEzcWorkflowDemo/message" />
     <sf_variable name="credential" value="" />
     <outNode id="5"/>
   </node>

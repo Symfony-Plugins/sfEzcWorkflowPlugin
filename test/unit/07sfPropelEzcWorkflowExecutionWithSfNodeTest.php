@@ -39,7 +39,7 @@ try {
     $t->is(sizeof($active_nodes),1,'There\'s one active node');
     $sf_node = array_pop($active_nodes);
     $t->is(get_class($sf_node),'ezcWorkflowNodeInputFromSf','Active node class is ezcWorkflowNodeInputFromSf');
-    $t->is($sf_node->getActionUri(),'test/choice','Right sfNode\'s action_uri attribute');
+    $t->is($sf_node->getActionUri(),'sfEzcWorkflowDemo/choice','Right sfNode\'s action_uri attribute');
     
     // Resume workflow execution.
     $execution->resume( array( 'choice' => $choice ) );
