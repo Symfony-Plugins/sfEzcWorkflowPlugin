@@ -229,4 +229,16 @@ class sfEzcWorkflowManager
     $validator_options = array_merge(array('model' => 'sfEzcWorkflow', 'column' => 'id'), $options);
     return new sfValidatorPropelChoice($validator_options);
   }
+  
+  /**
+   * @return an array of all ezcWorkflowExecution availables on the database
+   */
+  static public function retrieveAllExecutions()
+  {
+    //TODO: use a factory for sfPropel*
+    $c = new Criteria();
+    //TODO: change for PropelPager
+    $executions = sfEzcWorkflowExecutionPeer::doSelectReturnEzcWorklflowExecution($c);
+    return $executions;
+  }
 }

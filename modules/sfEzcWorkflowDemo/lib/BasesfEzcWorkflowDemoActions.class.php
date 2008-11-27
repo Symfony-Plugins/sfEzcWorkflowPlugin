@@ -5,17 +5,14 @@
  * 
  * @package     sfEzcWorkflowPlugin
  * @subpackage  sfEzcWorkflowDemo
- * @author      Your name here
- * @version     SVN: $Id: BaseActions.class.php 12628 2008-11-04 14:43:36Z Kris.Wallsmith $
+ * @author      Cinxgler Mariaca Minda < cinxgler at gmail dot com >
+ * @version     SVN: $Id:
  */
 abstract class BasesfEzcWorkflowDemoActions extends sfActions
 {
  public function executeIndex(sfWebRequest $request)
-  {
-    $execution = sfEzcWorkflowManager::createExecutionByWorkflowByName('Test_sf');
-    $id = $execution->start();
-    sfEzcWorkflowManager::doProcessRemainingNodes($execution,$this);
-  }
+ {
+ }
   
   public function executeChoice(sfWebRequest $request)
   {
@@ -39,5 +36,14 @@ abstract class BasesfEzcWorkflowDemoActions extends sfActions
         $this->variables = $execution->getVariables()?$execution->getVariables():'nada';
         $this->setTemplate('finished');
     }
+  }
+  
+  public function executeStart(sfWebRequest $request)
+  {
+    $execution = sfEzcWorkflowManager::createExecutionByWorkflowByName('Test_sf');
+    $id = $execution->start();
+    sfEzcWorkflowManager::doProcessRemainingNodes($execution,$this);
+    //This code below should never been executed
+    $this->setTemplate('index');
   }
 }
