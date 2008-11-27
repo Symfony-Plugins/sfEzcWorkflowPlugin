@@ -25,11 +25,8 @@ class PluginsfEzcWorkflowExecutionAdminActions extends autoSfEzcWorkflowExecutio
     if ($is_valid)
     {
       try
-      {
-        $storage = new sfPropelEzcWorkflowDefinitionStorage();
-        $workflow = $storage->loadById($this->form->getValue('workflow_id'));
-        $execution = new sfPropelEzcWorkflowExecution();
-        $execution->workflow = $workflow;
+      {        
+        $execution = sfEzcWorkflowManager::createExecutionByWorkflowId($this->form->getValue('workflow_id'));
         $id = $execution->start();
         if ($request->hasParameter('_save_and_add'))
         {
@@ -112,8 +109,8 @@ class PluginsfEzcWorkflowExecutionAdminActions extends autoSfEzcWorkflowExecutio
    */
   public function doResume($execution_id)
   {
-    $execution = new sfPropelEzcWorkflowExecution($execution_id);
-    sfEzcWorkflowActionsUtil::doProcessRemainingNodes($execution,$this);
+    $execution = sfEzcWorkflowManager::retrieveWorkflowExecutionById($execution_id);
+    sfEzcWorkflowManager::doProcessRemainingNodes($execution,$this);
   }
 
   /**
@@ -121,7 +118,7 @@ class PluginsfEzcWorkflowExecutionAdminActions extends autoSfEzcWorkflowExecutio
    */
   public function doCancel($execution_id)
   {
-    $execution = new sfPropelEzcWorkflowExecution($execution_id);
+    $execution = sfEzcWorkflowManager::retrieveWorkflowExecutionById($execution_id);
     $execution->cancel();
   }
   

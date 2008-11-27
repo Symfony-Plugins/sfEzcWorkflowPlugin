@@ -22,10 +22,12 @@ class PluginSfEzcWorkflowAdminActions extends autoSfEzcWorkflowAdminActions
         $file->save(sfConfig::get('sf_upload_dir').'/'.$name.'_0.xml');
 
         $definition = new ezcWorkflowDefinitionStorageXml( sfConfig::get('sf_upload_dir').'/' );
-        $workflow = $definition->loadByName( $name );
-        $storage = new sfPropelEzcWorkflowDefinitionStorage();
-        $storage->save( $workflow );
+        $workflow = $definition->loadByName($name);
+        sfEzcWorkflowManager::saveWorkflowOnDatabase($workflow);
         $this->getUser()->setFlash('notice', $this->getUser()->getFlash('notice').' Workflow saved on database successfully.');
+        $this->redirect('@sf_ezc_workflow');
+      }else{
+        $this->getUser()->setFlash('error', $this->getUser()->getFlash('error').' Workflow was not stored. Invalid data');
         $this->redirect('@sf_ezc_workflow');
       }
     }
@@ -43,36 +45,54 @@ class PluginSfEzcWorkflowAdminActions extends autoSfEzcWorkflowAdminActions
   
   public function executeDownloadXml(sfWebRequest $request)
   {
-    $workflow = $this->doLoadWorkflow($request->getParameter('id'));
-    $definition = new ezcWorkflowDefinitionStorageXml( sfConfig::get('sf_upload_dir') );
-    $xml_content = $definition->saveToDocument($workflow, $workflow->version)->saveXML();
-    $parameters=array();
-    $parameters['mime']='text/xml';
-    $parameters['filename']=$workflow->name.'_'.$workflow->version.'.xml';
-    $parameters['content-length']=strlen($xml_content);
-    $this->setDowloadHeaders($parameters);
-    return $this->renderText($xml_content);    
+    try
+    {
+      //TODO: validate id 
+      $workflow = $this->doLoadWorkflow($request->getParameter('id'));
+      $definition = new ezcWorkflowDefinitionStorageXml( sfConfig::get('sf_upload_dir') );
+      $xml_content = $definition->saveToDocument($workflow, $workflow->version)->saveXML();
+      $parameters=array();
+      $parameters['mime']='text/xml';
+      $parameters['filename']=$workflow->name.'_'.$workflow->version.'.xml';
+      $parameters['content-length']=strlen($xml_content);
+      $this->setDowloadHeaders($parameters);
+      return $this->renderText($xml_content);
+    }
+    catch (Exception $e)
+    {
+      $this->getUser()->setFlash('error', $this->getUser()->getFlash('error').' Invalid request. '.get_class($e).':'.$e->getMessage());
+      $this->redirect('@sf_ezc_workflow');
+    }
+
   }
   
   public function executeDownloadDot(sfWebRequest $request)
   {
-    $workflow = $this->doLoadWorkflow($request->getParameter('id'));
-    $visitor = new ezcWorkflowVisitorVisualization;
-    $workflow->accept( $visitor );
-    $message = "/* You can upload this file on http://urlgreyhot.com/graphviz/index.php to get a nice graph */\n/* or on unix run 'dot -Tpng -O filename.dot' */\n";
-    $dot_content = $message.$visitor->__toString();
-    $parameters=array();
-    $parameters['mime']='text/plain';
-    $parameters['filename']=$workflow->name.'_'.$workflow->version.'.dot';
-    $parameters['content-length']=strlen($dot_content);
-    $this->setDowloadHeaders($parameters);
-    return $this->renderText($dot_content);
+    try
+    {
+      //TODO: validate id
+      $workflow = $this->doLoadWorkflow($request->getParameter('id'));
+      $visitor = new ezcWorkflowVisitorVisualization;
+      $workflow->accept( $visitor );
+      $message = "/* You can upload this file on http://urlgreyhot.com/graphviz/index.php to get a nice graph */\n/* or on unix run 'dot -Tpng -O filename.dot' */\n";
+      $dot_content = $message.$visitor->__toString();
+      $parameters=array();
+      $parameters['mime']='text/plain';
+      $parameters['filename']=$workflow->name.'_'.$workflow->version.'.dot';
+      $parameters['content-length']=strlen($dot_content);
+      $this->setDowloadHeaders($parameters);
+      return $this->renderText($dot_content);
+    }
+    catch (Exception $e)
+    {
+      $this->getUser()->setFlash('error', $this->getUser()->getFlash('error').' Invalid request. '.get_class($e).':'.$e->getMessage());
+      $this->redirect('@sf_ezc_workflow');
+    }
   }
   
   protected function doLoadWorkflow($workflow_id)
   {
-    $storage = new sfPropelEzcWorkflowDefinitionStorage();
-    $workflow = $storage->loadById($workflow_id);
+    $workflow = sfEzcWorkflowManager::retrieveWorkflowDefinitionById($workflow_id);
     return $workflow;
   }
 
