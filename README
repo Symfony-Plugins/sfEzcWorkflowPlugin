@@ -28,12 +28,15 @@ Installation
     statements in `data/sql/plugins.sfGuardAuth.lib.model.schema.sql`
 
   * Enable one or more modules in your `settings.yml`
+  
+    * For your frontend application: sfEzcWorkflow, sfEzcWorkflowDemo
+    
     * For your backend application:  sfEzcWorkflowAdmin, sfEzcWorkflowExecutionAdmin
 
-            [php]
+            [yml]
             all:
               .settings:
-                enabled_modules:      [default, sfEzcWorkflowAdmin, sfEzcWorkflowExecutionAdmin]
+                enabled_modules:      [default, sfEzcWorkflowAdmin, sfEzcWorkflowExecutionAdmin, sfEzcWorkflow, sfEzcWorkflowDemo]
 
   * Clear you cache
 
@@ -54,6 +57,15 @@ If you need your workflow receives parameters from a symfony webform you must in
   * $configuration['sf_action_uri'] = (string) symfony 'module/action'
   * $configuration['sf_is_secure'] = (boolean) true indicates that a credential is required
   * $configuration['sf_credential'] = (string) requirede credential
+
+Workflow components
+-------------------
+
+There's a component that you can include in your applications to see the current workflow executions that are suspended and can be resumed by the current user. You just need to add in your template:
+
+    [php]
+     <?php include_component('sfEzcWorkflow', 'waitingExecutions') ?>
+
 
 Example
 -------
@@ -131,12 +143,11 @@ Example
           */
           public function executeIndex(sfWebRequest $request)
           {
-            $storage = new sfPropelEzcWorkflowDefinitionStorage();
-            $workflow = $storage->loadByName('Test_sf');
-            $execution = new sfPropelEzcWorkflowExecution();
-            $execution->workflow = $workflow;
+            $execution = sfEzcWorkflowManager::createExecutionByWorkflowByName('Test_sf');
             $id = $execution->start();
-            sfEzcWorkflowActionsUtil::doProcessRemainingNodes($execution,$this);
+            sfEzcWorkflowManager::doProcessRemainingNodes($execution,$this);
+            //This code below should never been executed
+            $this->setTemplate('index');
           }
           
           public function executeChoice(sfWebRequest $request)
@@ -145,7 +156,7 @@ Example
             if ($request->isMethod('post'))
             {
               $choice = $request->getParameter('choice')==='true'?true:false;
-              $execution = sfEzcWorkflowActionsUtil::doWorkflowResume($this->sf_ezc_wf_execution_id, array('choice'=>$choice), $this);
+              $execution = sfEzcWorkflowManager::doWorkflowResume($this->sf_ezc_wf_execution_id, array('choice'=>$choice), $this);
               $this->variables = $execution->getVariables();
               $this->setTemplate('finished');
             }
@@ -157,7 +168,7 @@ Example
             if ($request->isMethod('post'))
             {
                 $message = $request->getParameter('message');
-                $execution = sfEzcWorkflowActionsUtil::doWorkflowResume($this->sf_ezc_wf_execution_id, array('message'=>$message),$this);
+                $execution = sfEzcWorkflowManager::doWorkflowResume($this->sf_ezc_wf_execution_id, array('message'=>$message),$this);
                 $this->variables = $execution->getVariables()?$execution->getVariables():'nada';
                 $this->setTemplate('finished');
             }
@@ -236,12 +247,19 @@ Example
 
   * Store the workflow definition on the database.
     * Go to http://localhost/sfEzcWorkflowAdmin
+    
+      ![sfEzcWorkflowAdmin screenshot](http://svn.symfony-project.com/plugins/sfEzcWorkflowPlugin/images/sfEzcWorkflowAdmin.png "sfEzcWorkflowAdmin screenshot")
+    
     * In the form type the name 'Test_sf' and add the xml file
     * Press the button 'Create workflow from xml definition'
     
   * To execute the workflow just go to http://localhost/test
+    * Also there's a demo application, you just need to activate the module sfEzcWorkflowDemo to access it
 
   * You can monitor the current executions on http://localhost/sfEzcWorkflowExecutionAdmin
+  
+    ![sfEzcWorkflowExecutionAdmin screenshot](http://svn.symfony-project.com/plugins/sfEzcWorkflowPlugin/images/sfEzcWorkflowExecutionAdmin.png "sfEzcWorkflowExecutionAdmin screenshot")
+
 
 TODO
 ----
@@ -249,3 +267,4 @@ TODO
   * Create a class for receiving notifications from the ezcWorkflow and pass them to sf event framework
   * Create a node for resume and process workflow from CLI
   * Create workflow monitoring components
+  * Generate a doctrine implementation of ezcWorkflowExecution and ezcWorkflowDefinitionStorage
