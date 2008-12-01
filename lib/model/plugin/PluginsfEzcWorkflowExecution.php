@@ -22,5 +22,9 @@ class PluginsfEzcWorkflowExecution extends BasesfEzcWorkflowExecution
   public function getThreads( ){
     return sfPropelEzcWorkflowUtil::unserialize(parent::getThreads()) ;
   }
+  public function __toString()
+  {
+    return $this->getsfEzcWorkflow->name;
+  }
 
 }
