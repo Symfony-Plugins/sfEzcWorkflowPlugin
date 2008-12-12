@@ -108,12 +108,35 @@ class PluginSfEzcWorkflowAdminActions extends autoSfEzcWorkflowAdminActions
   
   public function executeDownloadPng(sfWebRequest $request)
   {
-    //Requires http://pear.php.net/package/Image_GraphViz but Doesn't work :(
+    
     $workflow = $this->doLoadWorkflow($request->getParameter('id'));
     $visitor = new ezcWorkflowVisitorVisualization;
     $workflow->accept( $visitor );
     $dot_content = $visitor->__toString();
-    require_once 'Image/GraphViz.php';
+    
+    $path = sfConfig::get('sf_upload_dir').'/';
+    $dot_file = $path.$workflow->id.'.dot';
+    $png_file = $path.$workflow->id.'.png';
+    $fhout = fopen($dot_file, 'w');
+    fwrite($fhout, $dot_content);
+    fclose($fhout);
+    
+    $this->setLayout(false);
+    $output = array();
+    $return_var = 0;
+    exec("(/usr/bin/dot -o $png_file -Tpng $dot_file > /dev/null) 3>&1 1>&2 2>&3",$output,$return_var);
+    if ($return_var)
+    {
+      $this->getUser()->setFlash('error', $this->getUser()->getFlash('error').' error executing generating the png file. ('.$return_var.'): '.var_export($output,true));
+      $this->redirect('@sf_ezc_workflow');
+    }
+
+    $this->redirect('/uploads/'.$workflow->id.'.png');
+
+    //$this->redirect('/uploads/'.$workflow->id.'.png');
+    //chmod ($outfilename, 0775);
+    /*require_once 'Image/GraphViz.php';
+    //Requires http://pear.php.net/package/Image_GraphViz but Doesn't work :(
     $graph = new Image_GraphViz();
     $graph->load($dot_content);
     $png_content = $graph->fetch('png');
@@ -124,6 +147,7 @@ class PluginSfEzcWorkflowAdminActions extends autoSfEzcWorkflowAdminActions
     $this->setDowloadHeaders($parameters);
     $response->setHttpHeader('Content-Transfer-Encoding','binary');
     return $this->renderText($png_content);
+    */
   }
 
 }

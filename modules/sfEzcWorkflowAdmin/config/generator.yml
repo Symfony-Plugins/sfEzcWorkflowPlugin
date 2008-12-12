@@ -19,6 +19,7 @@ generator:
         object_actions:
           downloadXml:   { label: Download .xml, action: downloadXml }
           downloadDot:   { label: Download .dot (GraphViz), action: downloadDot }
+          downloadPng:   { label: Download .png, action: downloadPng }
         batch_actions: {}
         actions: {}
       filter:  ~
