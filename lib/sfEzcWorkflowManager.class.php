@@ -165,7 +165,7 @@ class sfEzcWorkflowManager
    * @param String $name name of a workflow definition stored in a database
    * @return ezcWorkflowExecution
    */
-  static public function createExecutionByWorkflowByName($name)
+  static public function createExecutionWorkflowByName($name)
   {
     //TODO: use a factory for sfPropel*
     $storage = new sfPropelEzcWorkflowDefinitionStorage();
