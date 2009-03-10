@@ -1,6 +1,4 @@
-<?php
-echo form_tag('sfEzcWorkflowDemo/choice');
-?>
+<form action="<?php echo url_for('sfEzcWorkflowDemo/choice') ?>" method="post">
   Choice:
   <input type="hidden" name="sf_ezc_wf_execution_id" value="<?php echo $sf_ezc_wf_execution_id ?>" />
   <select name="choice">

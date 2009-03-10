@@ -5,7 +5,7 @@ include_once dirname(__FILE__).'/test_stub.php';
 $t = new lime_test(19, new lime_output_color());
 
 //WORKFLOW EXECUTION
-include_once dirname(__FILE__).'/../../lib/sfPropelEzcWorkflowExecution.class.php';
+include_once dirname(__FILE__).'/../../lib/propelTiein/sfPropelEzcWorkflowExecution.class.php';
 try {
   $branches = array( 'message: TRUE' => true, 'message: FALSE' => false );
   foreach( $branches as  $message => $choice ){

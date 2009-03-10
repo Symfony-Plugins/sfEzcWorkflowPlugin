@@ -40,7 +40,7 @@ abstract class BasesfEzcWorkflowDemoActions extends sfActions
   
   public function executeStart(sfWebRequest $request)
   {
-    $execution = sfEzcWorkflowManager::createExecutionByWorkflowByName('Test_sf');
+    $execution = sfEzcWorkflowManager::createExecutionWorkflowByName('Test_sf');
     $id = $execution->start();
     sfEzcWorkflowManager::doProcessRemainingNodes($execution,$this);
     //This code below should never been executed
