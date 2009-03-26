@@ -126,11 +126,11 @@ class sfEzcWorkflowManager
   
   /**
    * Validate if the user has rigths to execute the node
-   * @param ezcWorkflowNodeInput $node Input node to check execution restrictions
+   * @param ezcWorkflowNode $node Input node to check execution restrictions
    * @param sfUser               $user User who wants to execute the node
    * @return boolean true if execution is granted, false otherwise
    */
-  static public function isNodeExecutableByUser(ezcWorkflowNodeInput $node, sfUser $user)
+  static public function isNodeExecutableByUser(ezcWorkflowNode $node, sfUser $user)
   {
     if ($node instanceof ezcWorkflowNodeInputFromSf)
     {
