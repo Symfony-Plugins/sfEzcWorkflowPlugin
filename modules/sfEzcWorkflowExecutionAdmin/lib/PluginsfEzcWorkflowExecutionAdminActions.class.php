@@ -57,9 +57,9 @@ class PluginsfEzcWorkflowExecutionAdminActions extends autoSfEzcWorkflowExecutio
   }
   
   /**
-   * Validate an resume request and execute doResume
+   * Validate an resume request and execute doResume only InputFromSf node
    */
-  public function executeResume(sfWebRequest $request)
+  public function executeResumeWeb(sfWebRequest $request)
   {
     $execution_id = $request->getParameter('id');
     if ( $execution_id > 0)
@@ -68,6 +68,31 @@ class PluginsfEzcWorkflowExecutionAdminActions extends autoSfEzcWorkflowExecutio
       {
         $this->doResume($execution_id);
         $this->getUser()->setFlash('error', 'There isn\'t any ezcWorkflowNodeInputFromSf node waiting for being executed');
+      }catch(Exception $e)
+      {
+        $this->getUser()->setFlash('error', 'The workflow could\'nt be resumed : '. get_class($e).': '.$e->getMessage());
+      }
+    }
+    else
+    {
+      $this->getUser()->setFlash('error', 'The workflow instance is invalid.');
+    }
+    $this->redirect('@sfEzcWorkflowExecutionAdmin');
+  }
+
+
+  /**
+   * Validate an resume request and execute doResume any type of node
+   */
+  public function executeResumeAny(sfWebRequest $request)
+  {
+    $execution_id = $request->getParameter('id');
+    if ( $execution_id > 0)
+    {
+      try
+      {
+        $this->doResume($execution_id, sfEzcWorkflowManager::ANY_NODE);
+        $this->getUser()->setFlash('notice', 'Workflow resumed sucessfully');
       }catch(Exception $e)
       {
         $this->getUser()->setFlash('error', 'The workflow could\'nt be resumed : '. get_class($e).': '.$e->getMessage());
@@ -107,10 +132,10 @@ class PluginsfEzcWorkflowExecutionAdminActions extends autoSfEzcWorkflowExecutio
   /**
    * Resume a workflow suspended by an ezcWorkflowNodeInputFromSf node
    */
-  public function doResume($execution_id)
+  public function doResume($execution_id, $node_type = sfEzcWorkflowManager::ANY_SF_NODE)
   {
     $execution = sfEzcWorkflowManager::retrieveWorkflowExecutionById($execution_id);
-    sfEzcWorkflowManager::doProcessRemainingNodes($execution,$this);
+    sfEzcWorkflowManager::doProcessRemainingNodes($execution,$this,$node_type);
   }
 
   /**

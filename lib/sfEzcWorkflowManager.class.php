@@ -12,6 +12,10 @@
 
 class sfEzcWorkflowManager
 {
+  const ANY_SF_NODE = 1;
+  const ANY_INPUT_NODE = 2;
+  const ANY_NODE = 3;
+
   /**
    * This action resume a sfPropelEzcWorkflowExecution suspended when a
    * ezcWorkflowNodeInputFromSf is reached.
@@ -26,7 +30,7 @@ class sfEzcWorkflowManager
   static public function doWorkflowResume($execution_id, $variables, sfAction $action)
   {
     $execution = new sfPropelEzcWorkflowExecution($execution_id);
-    self::validateWorkflowResumeRequest($execution, $variables, $action);
+    self::validateWorkflowResumeRequest($execution, $variables, $action,self::ANY_SF_NODE);
     $execution->resume($variables);
     if ($execution->isSuspended())
     {
@@ -43,11 +47,12 @@ class sfEzcWorkflowManager
    * @param array                $variables an associative array with the variable to pass for
    *                                        resuming the workflow instance
    * @param sfAction             $action Action which call this method
+   * @param integer              $type_nodes   says what nodes can be resumed (sf input, any input, any node)
    * @exception sfEzcWorkflowManagerException
    * @return true if the request is valid, false otherwise
    */
   
-  static public function validateWorkflowResumeRequest(ezcWorkflowExecution $execution, $variables,sfAction $action)
+  static public function validateWorkflowResumeRequest(ezcWorkflowExecution $execution, $variables,sfAction $action, $type_nodes = self::ANY_SF_NODE )
   {
     $active_nodes = $execution->getActivatedNodes();
     if (sizeof($active_nodes) <= 0 ){
@@ -56,7 +61,7 @@ class sfEzcWorkflowManager
     $sfNodefound = false;
     foreach( $active_nodes as $node )
     {
-      $sfNodefound = self::isNodeExecutableByUser($node,$action->getUser());
+      $sfNodefound = self::isNodeExecutableByUser($node,$action->getUser(),$type_nodes);
       if ($sfNodefound)
       {
         return true;
@@ -69,10 +74,11 @@ class sfEzcWorkflowManager
    * Check if there's ezcWorkflowNodeInputFromSf nodes active and redirect to
    * the corresponding action
    * @param ezcWorkflowExecution $execution
-   * @param sfAction             $action     Action which call this method
+   * @param sfAction             $action        Action which call this method
+   * @param integer              $type_nodes   says what nodes can be resumed (sf input, any input, any node)
    * @exception sfEzcWorkflowManagerException
    */
-  static public function doProcessRemainingNodes(ezcWorkflowExecution $execution, sfAction $action)
+  static public function doProcessRemainingNodes(ezcWorkflowExecution $execution, sfAction $action, $type_nodes = self::ANY_SF_NODE )
   {
     $waiting_for = $execution->getWaitingFor();
     if ($execution->isSuspended() || sizeof($waiting_for) > 0)
@@ -83,11 +89,18 @@ class sfEzcWorkflowManager
       }
       foreach( $active_nodes as $node )
       {
-        if (!self::isNodeExecutableByUser($node,$action->getUser()))
+        if (!self::isNodeExecutableByUser($node,$action->getUser(),$type_nodes))
         {
           continue;
         }
-        $action->redirect($node->getActionUri().'?sf_ezc_wf_execution_id='.$execution->getId());
+        if ($node instanceof ezcWorkflowNodeInputFromSf)
+        {
+          $action->redirect($node->getActionUri().'?sf_ezc_wf_execution_id='.$execution->getId());
+        }
+        else
+        {
+          $execution->resume();
+        }
       }
     }else{
       throw new sfEzcWorkflowManagerException('Workflow is running and doesn\'t require any input');
@@ -125,14 +138,25 @@ class sfEzcWorkflowManager
   }
   
   /**
-   * Validate if the user has rigths to execute the node
+   * Validate if the user has rigths to execute
    * @param ezcWorkflowNode $node Input node to check execution restrictions
    * @param sfUser               $user User who wants to execute the node
+   * @param integer              $type_nodes   says what nodes can be resumed (sf input, any input, any node)
    * @return boolean true if execution is granted, false otherwise
    */
-  static public function isNodeExecutableByUser(ezcWorkflowNode $node, sfUser $user)
+  static public function isNodeExecutableByUser(ezcWorkflowNode $node, sfUser $user, $type_nodes)
   {
-    if ($node instanceof ezcWorkflowNodeInputFromSf)
+    if (($type_nodes == self::ANY_NODE ) && $node instanceof ezcWorkflowNode)
+    {
+      return true;
+    }
+    
+    if (($type_nodes == self::ANY_NODE || $type_nodes == self::ANY_INPUT_NODE) && $node instanceof ezcWorkflowNodeInput)
+    {
+      return true;
+    }
+
+    if (($type_nodes == self::ANY_NODE || $type_nodes == self::ANY_INPUT_NODE || $type_nodes == self::ANY_SF_NODE ) && $node instanceof ezcWorkflowNodeInputFromSf)
     {
       if ($node->isSecure())
       {

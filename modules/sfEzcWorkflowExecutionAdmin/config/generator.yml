@@ -19,7 +19,8 @@ generator:
         fields:
           sfEzcWorkflow: {label: Workflow}
         object_actions:
-          resume:   { label: Resume, action: Resume }
+          resume_sf:   { label: Resume sf nodes, action: ResumeWeb }
+          resume_any:   { label: Resume any nodes, action: ResumeAny }
           cancel:
             label: Cancel
             action: Cancel
