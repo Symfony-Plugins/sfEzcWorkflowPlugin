@@ -15,7 +15,7 @@ generator:
       fields: ~
       list:
         title: sfEzcWorkflow Instances Admin
-        display: [ parent, sfEzcWorkflow, _started, _variables, _waiting_for]
+        display: [ parent, sfEzcWorkflow, _started, _variables, _waiting_for, _status]
         fields:
           sfEzcWorkflow: {label: Workflow}
         object_actions:
