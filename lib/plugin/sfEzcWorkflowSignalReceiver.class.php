@@ -91,7 +91,6 @@ class sfEzcWorkflowSignalReceiver
   public function afterNodeExecuted( ezcWorkflowExecution $execution, ezcWorkflowNode $node )
   {
     $this->dispatcher->notify(new sfEvent($this, 'sf_ezc_workflow_execution.after_node_executed', array(
-      'signal_slot_returned_value'=>$return,
       'workflow_execution'        => $execution,
       'node'=>$node
     )));

@@ -253,7 +253,7 @@ class sfEzcWorkflowManager
     }
     // Connect signals to slots.
     $receiver_classname = sfConfig::get('app_sf_ezc_workflow_signal_receiver_classname');
-    $receiver = new $receiver_classname;
+    $receiver = new $receiver_classname(sfContext::getInstance()->getEventDispatcher());
     $signals = new ezcSignalCollection;
     $signals->connect( 'afterExecutionStarted', array( $receiver, 'afterExecutionStarted' ) );
     $signals->connect( 'afterExecutionSuspended', array( $receiver, 'afterExecutionSuspended' ) );
