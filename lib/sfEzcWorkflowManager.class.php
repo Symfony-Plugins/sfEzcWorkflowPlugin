@@ -29,7 +29,7 @@ class sfEzcWorkflowManager
    */
   static public function doWorkflowResume($execution_id, $variables, sfAction $action)
   {
-    $execution = new sfPropelEzcWorkflowExecution($execution_id);
+    $execution = self::retrieveWorkflowExecutionById($execution_id);
     self::validateWorkflowResumeRequest($execution, $variables, $action,self::ANY_SF_NODE);
     $execution->resume($variables);
     if ($execution->isSuspended())
@@ -180,9 +180,7 @@ class sfEzcWorkflowManager
     //TODO: use a factory for sfPropel*
     $storage = new sfPropelEzcWorkflowDefinitionStorage();
     $workflow = $storage->loadById($id);
-    $execution = new sfPropelEzcWorkflowExecution();
-    $execution->workflow = $workflow;
-    return $execution;
+    return self::createWorkflowExecution($workflow);
   }
 
   /**
@@ -194,11 +192,91 @@ class sfEzcWorkflowManager
     //TODO: use a factory for sfPropel*
     $storage = new sfPropelEzcWorkflowDefinitionStorage();
     $workflow = $storage->loadByName($name);
+    return self::createWorkflowExecution($workflow);
+  }
+  
+  /**
+   * Creates and set-up a new workflow execution
+   * @return sfPropelEzcWorkflowExecution
+   */
+  static public function createWorkflowExecution(ezcWorkflow $workflow)
+  {
+    
+    //TODO: use a factory for sfPropel*
     $execution = new sfPropelEzcWorkflowExecution();
     $execution->workflow = $workflow;
+    self::registerPlugin($execution);
+    self::registerEventLogger($execution);
     return $execution;
   }
 
+  /**
+   * Registers a plugin in the workflow execution based on the app.yml configuration
+   * more info on: http://www.ezcomponents.org/docs/tutorials/WorkflowEventLogTiein
+   * <pre>
+   * all:
+   *  sf_ezc_workflow:
+   *    register_event_logger: on
+   *    event_logger_classname: mysfEzcWorkflowEventLogger
+   * </pre>   
+   * @return sfEzcWorkflowExecution
+   */
+  static protected function registerEventLogger(ezcWorkflowExecution $execution)
+  {
+    if (!sfConfig::get('app_sf_ezc_workflow_register_event_logger'))
+    {
+      return $execution;
+    }
+    // Connect signals to slots.
+    $logger_classname = sfConfig::get('app_sf_ezc_workflow_event_logger_classname');
+    $logger = new $logger_classname;
+    $execution->addListener( $logger ); 
+    return $execution;
+  }
+
+  /**
+   * Registers a plugin in the workflow execution based on the app.yml configuration
+   * more info on: http://www.ezcomponents.org/docs/tutorials/WorkflowSignalSlotTiein
+   * <pre>
+   * all:
+   *  sf_ezc_workflow:
+   *    register_signal_receiver: on
+   *    signal_receiver_classname: mysfEzcWorkflowSignalReceiver
+   * </pre>   
+   * @return sfEzcWorkflowExecution
+   */
+  static protected function registerPlugin(ezcWorkflowExecution $execution)
+  {
+    if (!sfConfig::get('app_sf_ezc_workflow_register_signal_receiver'))
+    {
+      return $execution;
+    }
+    // Connect signals to slots.
+    $receiver_classname = sfConfig::get('app_sf_ezc_workflow_signal_receiver_classname');
+    $receiver = new $receiver_classname;
+    $signals = new ezcSignalCollection;
+    $signals->connect( 'afterExecutionStarted', array( $receiver, 'afterExecutionStarted' ) );
+    $signals->connect( 'afterExecutionSuspended', array( $receiver, 'afterExecutionSuspended' ) );
+    $signals->connect( 'afterExecutionResumed', array( $receiver, 'afterExecutionResumed' ) );
+    $signals->connect( 'afterExecutionCancelled', array( $receiver, 'afterExecutionCancelled' ) );
+    $signals->connect( 'afterExecutionEnded', array( $receiver, 'afterExecutionEnded' ) );
+    $signals->connect( 'beforeNodeActivated', array( $receiver, 'beforeNodeActivated' ) );
+    $signals->connect( 'afterNodeActivated', array( $receiver, 'afterNodeActivated' ) );
+    $signals->connect( 'afterNodeExecuted', array( $receiver, 'afterNodeExecuted' ) );
+    $signals->connect( 'afterRolledBackServiceObject', array( $receiver, 'afterRolledBackServiceObject' ) );
+    $signals->connect( 'afterThreadStarted', array( $receiver, 'afterThreadStarted' ) );
+    $signals->connect( 'afterThreadEnded', array( $receiver, 'afterThreadEnded' ) );
+    $signals->connect( 'beforeVariableSet', array( $receiver, 'beforeVariableSet' ) );
+    $signals->connect( 'afterVariableSet', array( $receiver, 'afterVariableSet' ) );
+    $signals->connect( 'beforeVariableUnset', array( $receiver, 'beforeVariableUnset' ) );
+    $signals->connect( 'afterVariableUnset', array( $receiver, 'afterVariableUnset' ) );
+
+    // Register SignalSlot workflow engine plugin.
+    $plugin = new ezcWorkflowSignalSlotPlugin();
+    $plugin->signals = $signals;    
+    $execution->addPlugin( $plugin );
+    return $execution;
+  }
   
   /**
    * @param Integer $id ID of a workflow execution stored in a database
@@ -207,7 +285,10 @@ class sfEzcWorkflowManager
   static public function retrieveWorkflowExecutionById($id)
   {
     //TODO: use a factory for sfPropel*
-    return new sfPropelEzcWorkflowExecution($id);
+    $execution = new sfPropelEzcWorkflowExecution($id);
+    self::registerPlugin($execution);
+    self::registerEventLogger($execution);
+    return $execution;
   }
   
   /**

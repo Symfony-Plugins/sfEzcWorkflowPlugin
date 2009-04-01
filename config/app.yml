@@ -1,0 +1,6 @@
+all:
+  sf_ezc_workflow:
+    register_signal_receiver: off
+    signal_receiver_classname: mysfEzcWorkflowSignalReceiver
+    register_event_logger: off
+    event_logger_classname: mysfEzcWorkflowEventLogger

@@ -260,11 +260,21 @@ Example
   
     ![sfEzcWorkflowExecutionAdmin screenshot](http://svn.symfony-project.com/plugins/sfEzcWorkflowPlugin/images/sfEzcWorkflowExecutionAdmin.png "sfEzcWorkflowExecutionAdmin screenshot")
 
+Workflow events and logging
+---------------------------
+
+To activate event notification and logging update your app.yml
+  [yml]
+    all:
+    sf_ezc_workflow:
+      register_signal_receiver: on
+      signal_receiver_classname: mysfEzcWorkflowSignalReceiver
+      register_event_logger: on
+      event_logger_classname: mysfEzcWorkflowEventLogger
 
 TODO
 ----
 
-  * Create a class for receiving notifications from the ezcWorkflow and pass them to sf event framework
   * Create a node for resume and process workflow from CLI
   * Create workflow monitoring components
   * Generate a doctrine implementation of ezcWorkflowExecution and ezcWorkflowDefinitionStorage
