@@ -21,6 +21,7 @@ generator:
         object_actions:
           resume_sf:   { label: Resume sf nodes, action: ResumeWeb }
           resume_any:   { label: Resume any nodes, action: ResumeAny }
+          show: {label: show details, action: show }
           cancel:
             label: Cancel
             action: Cancel

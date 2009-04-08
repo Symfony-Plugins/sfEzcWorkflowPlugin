@@ -186,5 +186,10 @@ class PluginsfEzcWorkflowExecutionAdminActions extends autoSfEzcWorkflowExecutio
   {
     $this->forward404();
   }
+  
+  public function executeShow(sfWebRequest $request)
+  {
+    $this->sf_ezc_workflow_execution = $this->getRoute()->getObject();
+  }
 
 }
