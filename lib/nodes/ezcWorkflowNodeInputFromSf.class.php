@@ -126,4 +126,19 @@ class ezcWorkflowNodeInputFromSf extends ezcWorkflowNodeInput {
     return array_merge($configuration,$this->configuration);
   }
 
+    /**
+     * Returns a textual representation of this node.
+     *
+     * @return string
+     * @ignore
+     */
+    public function __toString()
+    {
+      $str = parent::__toString();
+      $str .= ' uri=>'.$this->getActionUri().
+              ', is_secure=>'.$this->isSecure().
+              ', credential=>\''.$this->getCredential().
+              '\', variable(s)=>'.implode(',',array_keys($this->configuration));
+      return $str;
+    }
 }
