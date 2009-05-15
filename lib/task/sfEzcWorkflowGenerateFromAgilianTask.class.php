@@ -163,7 +163,8 @@ EOF;
     //create nodes for BPScriptTask
     foreach ($document->xpath("/Project/Models/Model/ChildModels/Model/ModelProperties/ModelProperty/Model[@modelType='BPScriptTask']") as $task) 
     {
-        $options=array('class'=>getCustomProperty($task,'class'),'arguments'=>$this->getCustomProperty($task,'arguments'));
+        $arguments = eval(html_entity_decode($this->getCustomProperty($task,'arguments')));
+        $options=array('class'=>getCustomProperty($task,'class'),'arguments'=>$arguments);
         $parent = $this->getTaskFromTaskType($task);
         $nodes[(string)$parent['id']] = new ezcWorkflowNodeAction($options);//new ezcWorkflowNodeAction
     }
@@ -171,7 +172,8 @@ EOF;
     //create nodes for BPSendTask
     foreach ($document->xpath("/Project/Models/Model/ChildModels/Model/ModelProperties/ModelProperty/Model[@modelType='BPSendTask']") as $task) 
     {
-        $options=array('class'=>$this->getCustomProperty($task,'class'),'arguments'=>$this->getCustomProperty($task,'arguments'));
+        $arguments = eval(html_entity_decode($this->getCustomProperty($task,'arguments')));
+        $options=array('class'=>$this->getCustomProperty($task,'class'),'arguments'=>$arguments);
         $parent = $this->getTaskFromTaskType($task);
         $nodes[(string)$parent['id']] = new ezcWorkflowNodeAction($options);//new ezcWorkflowNodeAction
     }
