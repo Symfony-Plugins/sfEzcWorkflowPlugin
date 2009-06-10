@@ -19,7 +19,7 @@ class sfEzcWorkflowPluginConfiguration extends sfPluginConfiguration
     // Integrate eZ Components
     if ($sf_ez_lib_dir = sfConfig::get('app_ez_lib_dir')){
       set_include_path($sf_ez_lib_dir.PATH_SEPARATOR.get_include_path());
-      require_once($sf_ez_lib_dir.'/Base/base.php');
+      require_once($sf_ez_lib_dir.'/Base/src/base.php');
       spl_autoload_register(array('ezcBase', 'autoload'));
     } else {
       require_once('ezc/Base/base.php');
